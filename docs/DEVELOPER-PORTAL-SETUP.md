@@ -5,14 +5,14 @@ The project is ready before a Discord application exists. Complete these steps w
 ## 1. Create the application
 
 1. Open the [Discord Developer Portal](https://discord.com/developers/applications).
-2. Select **New Application** and name it `OSMC`.
-3. On **General Information**, upload `assets/branding/osmc-logo.png` as the application icon.
+2. Select **New Application** and name it `SDMC`.
+3. On **General Information**, upload `assets/branding/sdmc-logo.png` as the application icon.
 4. Copy the **Application ID** into `DISCORD_CLIENT_ID` in `.env`.
 
 ## 2. Configure the bot
 
 1. Open the **Bot** page for the application.
-2. Set the username and upload the OSMC logo if Discord does not reuse the application icon.
+2. Set the username to `SDMC Bot` and upload the SDMC logo if Discord does not reuse the application icon.
 3. Create or reset the token, then copy it into `DISCORD_TOKEN` in `.env`.
 4. Leave privileged gateway intents disabled for now. The foundation only needs the standard Guilds intent.
 

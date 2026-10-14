@@ -14,7 +14,7 @@ import {
   type UserSelectMenuBuilder,
 } from 'discord.js';
 
-import { OSMC_THEME } from '../config/theme.js';
+import { SDMC_THEME } from '../config/theme.js';
 
 export type PanelTone = 'default' | 'success' | 'warning' | 'danger';
 
@@ -41,7 +41,7 @@ const toneMarks: Record<PanelTone, string> = {
 export function createPanel(options: PanelOptions): ContainerBuilder {
   const title = `## ${toneMarks[options.tone ?? 'default']} ${options.title}`;
   const header = new TextDisplayBuilder().setContent(`${title}\n${options.description}`);
-  const panel = new ContainerBuilder().setAccentColor(OSMC_THEME.colors.primary);
+  const panel = new ContainerBuilder().setAccentColor(SDMC_THEME.colors.primary);
 
   if (options.thumbnailUrl) {
     panel.addSectionComponents(
@@ -50,7 +50,7 @@ export function createPanel(options: PanelOptions): ContainerBuilder {
         .setThumbnailAccessory(
           new ThumbnailBuilder()
             .setURL(options.thumbnailUrl)
-            .setDescription(`${OSMC_THEME.name} club logo`),
+            .setDescription(`${SDMC_THEME.name} club logo`),
         ),
     );
   } else {
@@ -90,7 +90,7 @@ export function createPanel(options: PanelOptions): ContainerBuilder {
       new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
     )
     .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`-# ${options.footer ?? OSMC_THEME.footer}`),
+      new TextDisplayBuilder().setContent(`-# ${options.footer ?? SDMC_THEME.footer}`),
     );
 
   return panel;

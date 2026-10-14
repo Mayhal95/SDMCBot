@@ -1,11 +1,11 @@
 # Google Sheets database setup
 
-The OSMC bot uses the [OSMC | Main](https://docs.google.com/spreadsheets/d/1WaAwMsCw5wA1vXklryjri8CIri5gxJxoRc60jWAbj3A/edit) workbook as its source of truth.
+The SDMC bot uses the [SDMC | Main](https://docs.google.com/spreadsheets/d/1WaAwMsCw5wA1vXklryjri8CIri5gxJxoRc60jWAbj3A/edit) workbook as its source of truth.
 
 ## 1. Create a Google service account
 
 1. Open [Google Cloud Console](https://console.cloud.google.com/).
-2. Create or select a project for the OSMC bot.
+2. Create or select a project for the SDMC bot.
 3. Enable the **Google Sheets API**.
 4. Open **IAM & Admin → Service Accounts** and create a service account.
 5. Open the service account, create a JSON key, and download it.
@@ -17,7 +17,7 @@ The downloaded key is a secret. Never commit it or upload it to Discord.
 Copy the service account's `client_email` and `private_key` values into the local `.env` file:
 
 ```env
-GOOGLE_SERVICE_ACCOUNT_EMAIL=osmc-bot@example-project.iam.gserviceaccount.com
+GOOGLE_SERVICE_ACCOUNT_EMAIL=sdmc-bot@example-project.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 GOOGLE_SPREADSHEET_ID=1WaAwMsCw5wA1vXklryjri8CIri5gxJxoRc60jWAbj3A
 ```

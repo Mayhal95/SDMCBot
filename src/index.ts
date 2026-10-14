@@ -28,7 +28,7 @@ import { createPanel, createPanelEdit, createPanelReply } from './ui/panel.js';
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
   presence: {
-    activities: [{ name: 'over the Obsidian Serpents', type: ActivityType.Watching }],
+    activities: [{ name: 'over the Sacred Disciples', type: ActivityType.Watching }],
     status: 'online',
   },
 });
@@ -39,7 +39,7 @@ client.once(Events.ClientReady, (readyClient) => {
       guildCount: readyClient.guilds.cache.size,
       tag: readyClient.user.tag,
     },
-    'OSMC bot is ready',
+    'SDMC bot is ready',
   );
 });
 
@@ -57,7 +57,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await interaction.reply(
           createPanelReply({
             title: 'Founder Role Required',
-            description: `Only members with the <@&${env.OSMC_FOUNDER_ROLE_ID}> role can use OSMC Bot commands and controls.`,
+            description: `Only members with the <@&${env.SDMC_FOUNDER_ROLE_ID}> role can use SDMC Bot commands and controls.`,
             ephemeral: true,
             tone: 'warning',
           }),
@@ -184,7 +184,7 @@ client.on(Events.Error, (error) => {
 });
 
 async function shutdown(signal: NodeJS.Signals): Promise<void> {
-  logger.info({ signal }, 'Shutting down OSMC bot');
+  logger.info({ signal }, 'Shutting down SDMC bot');
   await client.destroy();
 }
 

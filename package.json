@@ -1,8 +1,8 @@
 {
-  "name": "osmc-discord-bot",
+  "name": "sdmc-discord-bot",
   "version": "0.1.0",
   "private": true,
-  "description": "Discord bot for the Obsidian Serpents Motorcycle Club in NoKey FiveM.",
+  "description": "Discord bot for Sacred Disciples Motorcycle Club in NoKey FiveM.",
   "type": "module",
   "engines": {
     "node": ">=22.12.0"

@@ -1,12 +1,12 @@
-# OSMC Discord Bot
+# SDMC Discord Bot
 
-The official Discord bot foundation for the **Obsidian Serpents Motorcycle Club** in NoKey FiveM.
+The official Discord bot for **Sacred Disciples Motorcycle Club** in NoKey FiveM.
 
-The bot is built with TypeScript, discord.js, and Discord Components V2. Every user-facing bot response uses the shared OSMC visual system:
+The bot is built with TypeScript, discord.js, and Discord Components V2. Every user-facing bot response uses the shared SDMC visual system:
 
 - Primary: `#2A213A`
 - Secondary: `#000000`
-- Club mark: `assets/branding/osmc-logo.png`
+- Club mark: `assets/branding/sdmc-logo.png`
 
 ## Requirements
 
@@ -29,7 +29,7 @@ Never commit `.env` or share the bot token.
 
 ## Commands included
 
-Every command and management control is restricted to the Discord role configured by `OSMC_FOUNDER_ROLE_ID`. Ballot buttons are intentionally available to server members after a Founder opens a vote.
+Every command and management control is restricted to the Discord role configured by `SDMC_FOUNDER_ROLE_ID`. Ballot buttons are intentionally available to server members after a Founder opens a vote.
 
 - `/about` — Displays the club identity and initial bot information.
 - `/church` — Opens the private church console for attendance, discussion topics, and final meeting minutes with an automatic discussion thread and Google Sheets attendance history.
@@ -42,7 +42,7 @@ Every command and management control is restricted to the Discord role configure
 - `/roster sync` — Previews and synchronizes configured Discord rank roles.
 - `/vote` — Opens a 15- or 30-second ballot in the configured vote channel and publishes the final result with progress bars.
 
-Church topics, final minutes, and votes are routed through `OSMC_CHURCH_TOPICS_CHANNEL_ID`, `OSMC_CHURCH_MINUTES_CHANNEL_ID`, and `OSMC_VOTES_CHANNEL_ID`. The supplied defaults point to the official OSMC channels.
+Church topics, final minutes, and votes are routed through `SDMC_CHURCH_TOPICS_CHANNEL_ID`, `SDMC_CHURCH_MINUTES_CHANNEL_ID`, and `SDMC_VOTES_CHANNEL_ID`. The supplied defaults point to the official SDMC channels.
 
 ## Useful scripts
 
@@ -60,7 +60,7 @@ Church topics, final minutes, and votes are routed through `OSMC_CHURCH_TOPICS_C
 ## Project layout
 
 ```text
-assets/branding/       OSMC brand assets
+assets/branding/       SDMC brand assets
 docs/                  Setup and operating guides
 src/commands/          Slash command modules
 src/config/            Environment and theme configuration

@@ -1,7 +1,7 @@
 import type { sheets_v4 } from 'googleapis';
 
 import { env } from './config/env.js';
-import { OSMC_THEME } from './config/theme.js';
+import { SDMC_THEME } from './config/theme.js';
 import { createSheetsClient, DATABASE_HEADERS } from './database/google-sheets.js';
 import {
   CHURCH_ATTENDANCE_STATUSES,
@@ -117,9 +117,9 @@ async function formatSchema(
 ): Promise<void> {
   const requests: sheets_v4.Schema$Request[] = [];
   const purple = {
-    red: ((OSMC_THEME.colors.primary >> 16) & 255) / 255,
-    green: ((OSMC_THEME.colors.primary >> 8) & 255) / 255,
-    blue: (OSMC_THEME.colors.primary & 255) / 255,
+    red: ((SDMC_THEME.colors.primary >> 16) & 255) / 255,
+    green: ((SDMC_THEME.colors.primary >> 8) & 255) / 255,
+    blue: (SDMC_THEME.colors.primary & 255) / 255,
   };
 
   for (const [sheetName, headers] of Object.entries(DATABASE_HEADERS)) {
@@ -348,7 +348,7 @@ try {
   const properties = await ensureHeaders();
   await formatSchema(properties);
   await verifyChurchSchema();
-  logger.info({ spreadsheetId }, 'OSMC Google Sheets database schema is ready');
+  logger.info({ spreadsheetId }, 'SDMC Google Sheets database schema is ready');
 } catch (error) {
   logger.fatal(
     { error, spreadsheetId },

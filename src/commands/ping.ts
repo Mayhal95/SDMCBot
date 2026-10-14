@@ -15,7 +15,7 @@ export const pingCommand: BotCommand = {
     await interaction.reply(
       createPanelReply({
         title: 'Systems Online',
-        description: 'The OSMC bot is connected and responding normally.',
+        description: 'The SDMC bot is connected and responding normally.',
         details: [`Response time: **${roundTrip} ms**`, `Discord gateway: **${websocket} ms**`],
         ephemeral: true,
         tone: 'success',

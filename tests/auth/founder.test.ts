@@ -7,7 +7,7 @@ describe('Founder role authorization', () => {
   it('accepts the Founder role from a raw Discord interaction member', () => {
     const interaction = {
       inGuild: () => true,
-      member: { roles: [env.OSMC_FOUNDER_ROLE_ID] },
+      member: { roles: [env.SDMC_FOUNDER_ROLE_ID] },
     };
 
     expect(hasFounderRole(interaction as never)).toBe(true);
@@ -16,7 +16,7 @@ describe('Founder role authorization', () => {
   it('accepts the Founder role from a cached guild member', () => {
     const interaction = {
       inGuild: () => true,
-      member: { roles: { cache: new Map([[env.OSMC_FOUNDER_ROLE_ID, {}]]) } },
+      member: { roles: { cache: new Map([[env.SDMC_FOUNDER_ROLE_ID, {}]]) } },
     };
 
     expect(hasFounderRole(interaction as never)).toBe(true);

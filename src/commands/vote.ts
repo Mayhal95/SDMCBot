@@ -68,7 +68,7 @@ function votePanel(state: VoteState) {
         'Results remain hidden until the vote closes.',
       ];
   return {
-    title: state.closed ? 'Vote Closed' : 'Official OSMC Vote',
+    title: state.closed ? 'Vote Closed' : 'Official SDMC Vote',
     description: escapeMarkdown(state.question),
     details,
     tone: state.closed ? ('success' as const) : ('default' as const),
@@ -112,7 +112,7 @@ async function closeVote(id: string): Promise<void> {
 export const voteCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName('vote')
-    .setDescription('Open a timed OSMC vote.')
+    .setDescription('Open a timed SDMC vote.')
     .addStringOption((option) =>
       option
         .setName('question')
@@ -135,7 +135,7 @@ export const voteCommand: BotCommand = {
     ),
 
   async execute(interaction) {
-    const channel = await interaction.client.channels.fetch(env.OSMC_VOTES_CHANNEL_ID);
+    const channel = await interaction.client.channels.fetch(env.SDMC_VOTES_CHANNEL_ID);
     if (!channel?.isSendable()) {
       throw new Error('The configured voting channel cannot receive messages.');
     }

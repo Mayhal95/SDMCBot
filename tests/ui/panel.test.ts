@@ -1,18 +1,18 @@
 import { ComponentType, MessageFlags } from 'discord.js';
 import { describe, expect, it } from 'vitest';
 
-import { OSMC_THEME } from '../../src/config/theme.js';
+import { SDMC_THEME } from '../../src/config/theme.js';
 import { createPanel, createPanelReply } from '../../src/ui/panel.js';
 
-describe('OSMC Components V2 panel', () => {
-  it('uses the official OSMC accent and container structure', () => {
+describe('SDMC Components V2 panel', () => {
+  it('uses the official SDMC accent and container structure', () => {
     const panel = createPanel({
       title: 'Test Panel',
       description: 'A test description.',
     }).toJSON();
 
     expect(panel.type).toBe(ComponentType.Container);
-    expect(panel.accent_color).toBe(OSMC_THEME.colors.primary);
+    expect(panel.accent_color).toBe(SDMC_THEME.colors.primary);
     expect(panel.components.length).toBeGreaterThanOrEqual(3);
   });
 

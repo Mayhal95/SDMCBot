@@ -7,6 +7,6 @@ export function hasFounderRole(interaction: BaseInteraction): boolean {
 
   const roles = interaction.member.roles;
   return Array.isArray(roles)
-    ? roles.includes(env.OSMC_FOUNDER_ROLE_ID)
-    : roles.cache.has(env.OSMC_FOUNDER_ROLE_ID);
+    ? roles.includes(env.SDMC_FOUNDER_ROLE_ID)
+    : roles.cache.has(env.SDMC_FOUNDER_ROLE_ID);
 }

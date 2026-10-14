@@ -166,7 +166,7 @@ export class GoogleSheetsDatabase {
 
     const now = new Date().toISOString();
     const member: Omit<MemberRecord, 'rowNumber'> = {
-      memberId: createId('OSMC'),
+      memberId: createId('SDMC'),
       discordUserId: input.discordUserId,
       discordUsername: input.discordUsername,
       inGameName: input.inGameName,

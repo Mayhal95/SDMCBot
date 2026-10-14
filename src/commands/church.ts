@@ -156,7 +156,7 @@ async function fetchSendableChannel(
 export const churchCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName('church')
-    .setDescription('Open the OSMC church meeting console.'),
+    .setDescription('Open the SDMC church meeting console.'),
 
   async execute(interaction) {
     if (!interaction.guildId) return;
@@ -313,7 +313,7 @@ export async function handleChurchModal(interaction: ModalSubmitInteraction): Pr
       reason: interaction.fields.getTextInputValue('reason').trim(),
       submittedById: interaction.user.id,
     };
-    const channel = await fetchSendableChannel(interaction, env.OSMC_CHURCH_TOPICS_CHANNEL_ID);
+    const channel = await fetchSendableChannel(interaction, env.SDMC_CHURCH_TOPICS_CHANNEL_ID);
     const message = await channel.send({
       components: [
         createPanel({
@@ -362,17 +362,17 @@ export async function handleChurchModal(interaction: ModalSubmitInteraction): Pr
     ...(actions ? [`### Actions & Follow-ups\n${escapeMarkdown(actions)}`] : []),
     `**Minutes recorded by:** <@${interaction.user.id}>`,
   ]);
-  const channel = await fetchSendableChannel(interaction, env.OSMC_CHURCH_MINUTES_CHANNEL_ID);
+  const channel = await fetchSendableChannel(interaction, env.SDMC_CHURCH_MINUTES_CHANNEL_ID);
   const message = await channel.send({
     components: [
-      createPanel({ title, description: 'Official OSMC church meeting record', details }),
+      createPanel({ title, description: 'Official SDMC church meeting record', details }),
     ],
     flags: MessageFlags.IsComponentsV2,
     allowedMentions: { parse: [] },
   });
   const thread = await message.startThread({
     name: `Discussion — ${title}`.slice(0, 100),
-    reason: 'Automatic discussion thread for OSMC church minutes',
+    reason: 'Automatic discussion thread for SDMC church minutes',
   });
   const presentMembers = await Promise.all(
     [...draft.attendance].map(async (discordUserId) => {

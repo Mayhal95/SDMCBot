@@ -58,7 +58,7 @@ async function denyStaffAction(
   await interaction.reply(
     createPanelReply({
       title: 'Founder Role Required',
-      description: 'Only members with the configured **Founder** role can use OSMC Bot.',
+      description: 'Only members with the configured **Founder** role can use SDMC Bot.',
       ephemeral: true,
       tone: 'warning',
     }),
@@ -101,7 +101,7 @@ function memberDetails(member: MemberRecord): string[] {
     `**Discord:** <@${member.discordUserId}>`,
     `**Rank:** ${escapeMarkdown(member.rank || 'Unassigned')}`,
     `**Status:** ${escapeMarkdown(member.status || 'Unknown')}`,
-    `**Joined OSMC:** ${displayDate(member.clubJoinDate)}`,
+    `**Joined SDMC:** ${displayDate(member.clubJoinDate)}`,
     `**Discord server joined:** ${displayDate(member.discordServerJoinedAt)}`,
     `**Member ID:** \`${member.memberId}\``,
   ];
@@ -155,7 +155,7 @@ async function synchronizeMemberRankRoles(
 
   if (removeRoleIds.length) {
     await guildMember.roles
-      .remove(removeRoleIds, 'OSMC member rank updated')
+      .remove(removeRoleIds, 'SDMC member rank updated')
       .then(() => {
         removed = removeRoleIds.length;
       })
@@ -165,7 +165,7 @@ async function synchronizeMemberRankRoles(
   }
   if (shouldAddRole) {
     await guildMember.roles
-      .add(desiredRoleId, 'OSMC member rank updated')
+      .add(desiredRoleId, 'SDMC member rank updated')
       .then(() => {
         added = 1;
       })
@@ -294,7 +294,7 @@ async function registerMember(interaction: ChatInputCommandInteraction): Promise
     await interaction.reply(
       createPanelReply({
         title: 'Invalid Member',
-        description: 'Bot accounts cannot be registered as OSMC members.',
+        description: 'Bot accounts cannot be registered as SDMC members.',
         ephemeral: true,
         tone: 'warning',
       }),
@@ -304,7 +304,7 @@ async function registerMember(interaction: ChatInputCommandInteraction): Promise
 
   const modal = new ModalBuilder()
     .setCustomId(`${modalIds.register}${target.id}`)
-    .setTitle('Register OSMC Member')
+    .setTitle('Register SDMC Member')
     .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
         `Registering **${escapeMarkdown(target.username)}**. Their Discord ID and join dates will be recorded automatically.`,
@@ -343,7 +343,7 @@ async function viewMember(interaction: ChatInputCommandInteraction): Promise<voi
     await interaction.editReply(
       createPanelEdit({
         title: 'Member Not Found',
-        description: `${escapeMarkdown(target.username)} is not registered in the OSMC roster.`,
+        description: `${escapeMarkdown(target.username)} is not registered in the SDMC roster.`,
         tone: 'warning',
       }),
     );
@@ -354,7 +354,7 @@ async function viewMember(interaction: ChatInputCommandInteraction): Promise<voi
   await interaction.editReply(
     createPanelEdit({
       title: member.inGameName,
-      description: 'OSMC member profile',
+      description: 'SDMC member profile',
       details: [...memberDetails(member), ...churchAttendanceDetails(attendance)],
     }),
   );
@@ -386,10 +386,10 @@ async function editMember(interaction: ChatInputCommandInteraction): Promise<voi
     await interaction.editReply(
       createPanelEdit({
         title: 'Confirm Permanent Removal',
-        description: `Permanently remove **${escapeMarkdown(member.inGameName)}** from the OSMC database?`,
+        description: `Permanently remove **${escapeMarkdown(member.inGameName)}** from the SDMC database?`,
         details: [
           'Their member row and all private member notes will be deleted.',
-          'Configured OSMC rank roles will be removed from their Discord account.',
+          'Configured SDMC rank roles will be removed from their Discord account.',
           'A minimal removal event will remain in the Audit Log.',
           '**This action cannot be undone.**',
         ],
@@ -489,11 +489,11 @@ async function memberNotes(interaction: ChatInputCommandInteraction): Promise<vo
 export const memberCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName('member')
-    .setDescription('Manage OSMC member records.')
+    .setDescription('Manage SDMC member records.')
     .addSubcommand((subcommand) =>
       subcommand
         .setName('register')
-        .setDescription('Register a Discord user as an OSMC member.')
+        .setDescription('Register a Discord user as an SDMC member.')
         .addUserOption((option) =>
           option.setName('member').setDescription('Discord user to register.').setRequired(true),
         ),
@@ -501,7 +501,7 @@ export const memberCommand: BotCommand = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName('view')
-        .setDescription('View an OSMC member profile.')
+        .setDescription('View an SDMC member profile.')
         .addUserOption((option) =>
           option.setName('member').setDescription('Member to view; defaults to yourself.'),
         ),
@@ -509,7 +509,7 @@ export const memberCommand: BotCommand = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName('edit')
-        .setDescription('Edit or remove an existing OSMC member profile.')
+        .setDescription('Edit or remove an existing SDMC member profile.')
         .addUserOption((option) =>
           option.setName('member').setDescription('Member to edit.').setRequired(true),
         )
@@ -633,7 +633,7 @@ export async function handleMemberButton(interaction: ButtonInteraction): Promis
     .filter((roleId) => guildMember?.roles.cache.has(roleId));
   let roleCleanupFailed = false;
   if (guildMember && mappedRoleIds.length) {
-    await guildMember.roles.remove(mappedRoleIds, 'OSMC member permanently removed').catch(() => {
+    await guildMember.roles.remove(mappedRoleIds, 'SDMC member permanently removed').catch(() => {
       roleCleanupFailed = true;
     });
   }
@@ -642,7 +642,7 @@ export async function handleMemberButton(interaction: ButtonInteraction): Promis
   await interaction.editReply(
     createPanelEdit({
       title: 'Member Removed',
-      description: `${escapeMarkdown(member.inGameName)} was permanently removed from the OSMC database.`,
+      description: `${escapeMarkdown(member.inGameName)} was permanently removed from the SDMC database.`,
       details: [
         'Their member row and private notes were deleted.',
         roleCleanupFailed
@@ -810,7 +810,7 @@ export async function handleMemberModal(interaction: ModalSubmitInteraction): Pr
     await interaction.editReply(
       createPanelEdit({
         title: 'Member Registered',
-        description: `${escapeMarkdown(member.inGameName)} is now on the official OSMC roster.`,
+        description: `${escapeMarkdown(member.inGameName)} is now on the official SDMC roster.`,
         details: [...memberDetails(member), roleResult.message],
         tone: roleResult.failed ? 'warning' : 'success',
       }),

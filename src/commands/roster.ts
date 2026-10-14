@@ -39,7 +39,7 @@ function rosterPageOptions(members: MemberRecord[], requestedPage: number) {
   const pageMembers = members.slice(page * pageSize, page * pageSize + pageSize);
 
   return {
-    title: 'OSMC Roster',
+    title: 'SDMC Roster',
     description: `**${members.length}** active roster member${members.length === 1 ? '' : 's'} · Page ${page + 1} of ${pageCount}`,
     details: pageMembers.length
       ? pageMembers.map(
@@ -189,9 +189,9 @@ async function previewRosterSync(interaction: ChatInputCommandInteraction): Prom
 export const rosterCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName('roster')
-    .setDescription('View and synchronize the OSMC roster.')
+    .setDescription('View and synchronize the SDMC roster.')
     .addSubcommand((subcommand) =>
-      subcommand.setName('view').setDescription('View the active OSMC roster.'),
+      subcommand.setName('view').setDescription('View the active SDMC roster.'),
     )
     .addSubcommand((subcommand) =>
       subcommand
@@ -261,10 +261,10 @@ export async function handleRosterButton(interaction: ButtonInteraction): Promis
   for (const change of plan.changes) {
     try {
       if (change.removeRoleIds.length) {
-        await change.guildMember.roles.remove(change.removeRoleIds, 'OSMC roster synchronization');
+        await change.guildMember.roles.remove(change.removeRoleIds, 'SDMC roster synchronization');
       }
       if (change.addRoleId) {
-        await change.guildMember.roles.add(change.addRoleId, 'OSMC roster synchronization');
+        await change.guildMember.roles.add(change.addRoleId, 'SDMC roster synchronization');
       }
       updated += 1;
     } catch {
@@ -281,7 +281,7 @@ export async function handleRosterButton(interaction: ButtonInteraction): Promis
   await interaction.editReply(
     createPanelEdit({
       title: 'Roster Sync Complete',
-      description: 'Configured OSMC rank roles have been synchronized with the spreadsheet.',
+      description: 'Configured SDMC rank roles have been synchronized with the spreadsheet.',
       details: [
         `**Members updated:** ${updated}`,
         `**Updates that failed:** ${failed}`,
