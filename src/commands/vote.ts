@@ -40,6 +40,14 @@ function progressBar(value: number, total: number): string {
   return `${'▰'.repeat(filled)}${'▱'.repeat(12 - filled)}`;
 }
 
+function voteDurationLabel(seconds: number): string {
+  if (seconds >= 3600 && seconds % 3600 === 0) {
+    const hours = seconds / 3600;
+    return `${hours} hour${hours === 1 ? '' : 's'}`;
+  }
+  return `${seconds} seconds`;
+}
+
 export function voteOutcome(yes: number, no: number, abstain: number): string {
   const total = yes + no + abstain;
   if (!total) return 'No Result — no ballots were cast';
@@ -125,7 +133,12 @@ export const voteCommand: BotCommand = {
         .setName('duration')
         .setDescription('How long voting remains open.')
         .setRequired(true)
-        .addChoices({ name: '15 seconds', value: 15 }, { name: '30 seconds', value: 30 }, { name: '1 Hour', value: 3600 }, { name: '24 Hours', value: 86400 }),
+        .addChoices(
+          { name: '15 seconds', value: 15 },
+          { name: '30 seconds', value: 30 },
+          { name: '1 hour', value: 3600 },
+          { name: '24 hours', value: 86400 },
+        ),
     )
     .addStringOption((option) =>
       option
@@ -162,7 +175,7 @@ export const voteCommand: BotCommand = {
     await interaction.reply(
       createPanelReply({
         title: 'Vote Opened',
-        description: `Voting is open for **${duration} seconds**.`,
+        description: `Voting is open for **${voteDurationLabel(duration)}**.`,
         details: [`[Go to the official vote](${message.url})`],
         ephemeral: true,
         tone: 'success',

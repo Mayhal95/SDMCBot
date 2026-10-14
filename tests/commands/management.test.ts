@@ -79,7 +79,7 @@ describe('management command definitions', () => {
     });
   });
 
-  it('limits votes to the supported 15 and 30 second durations', () => {
+  it('limits votes to the supported short and extended durations', () => {
     const duration = voteCommand.data
       .toJSON()
       .options?.find((option) => option.name === 'duration');
@@ -88,6 +88,8 @@ describe('management command definitions', () => {
       choices: [
         { name: '15 seconds', value: 15 },
         { name: '30 seconds', value: 30 },
+        { name: '1 hour', value: 3600 },
+        { name: '24 hours', value: 86400 },
       ],
     });
   });
