@@ -125,7 +125,7 @@ export const voteCommand: BotCommand = {
         .setName('duration')
         .setDescription('How long voting remains open.')
         .setRequired(true)
-        .addChoices({ name: '15 seconds', value: 15 }, { name: '30 seconds', value: 30 }),
+        .addChoices({ name: '15 seconds', value: 15 }, { name: '30 seconds', value: 30 }, { name: '1 Hour', value: 3600 }, { name: '24 Hours', value: 86400 }),
     )
     .addStringOption((option) =>
       option
