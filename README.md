@@ -40,7 +40,14 @@ Every command and management control is restricted to the Discord role configure
 - `/ping` — Confirms that the bot and Discord connection are healthy.
 - `/roster view` — Displays the paginated active roster.
 - `/roster sync` — Previews and synchronizes configured Discord rank roles.
+- `/treasurer overview` — Shows Money and Dirty Money balances, totals gained/spent, and current dues progress.
+- `/treasurer transaction` — Records income or expenses against either fund with a category, description, and optional related member.
+- `/treasurer ledger` — Displays recent financial activity with optional fund filtering.
+- `/treasurer dues` — Records a member dues payment and automatically adds it to treasury income.
+- `/treasurer dues-report` — Shows paid and unpaid roster members for a monthly dues period.
 - `/vote` — Opens a 15- or 30-second ballot in the configured vote channel and publishes the final result with progress bars.
+
+Treasury commands are available to Founders and to members holding the active Discord role mapped to the `Treasurer` rank in the `Ranks` tab. Financial responses are private to the command user.
 
 Church topics, final minutes, and votes are routed through `SDMC_CHURCH_TOPICS_CHANNEL_ID`, `SDMC_CHURCH_MINUTES_CHANNEL_ID`, and `SDMC_VOTES_CHANNEL_ID`. The supplied defaults point to the official SDMC channels.
 

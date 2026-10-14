@@ -9,15 +9,24 @@ import {
   AUDIT_HEADERS,
   CHURCH_ATTENDANCE_HEADERS,
   CHURCH_MEETING_HEADERS,
+  DUES_PAYMENT_HEADERS,
   MEMBER_HEADERS,
   NOTE_HEADERS,
   RANK_HEADERS,
   SHEETS,
+  TREASURY_FUNDS,
+  TREASURY_TRANSACTION_HEADERS,
   type MemberNote,
   type MemberRecord,
   type RankMapping,
   type ChurchMeetingRecord,
   type ChurchAttendanceSummary,
+  type DuesPayment,
+  type DuesReport,
+  type TreasuryFund,
+  type TreasurySummary,
+  type TreasuryTransaction,
+  type TreasuryTransactionType,
 } from './schema.js';
 
 export interface Actor {
@@ -65,6 +74,25 @@ export interface RecordChurchMeetingInput {
   actor: Actor;
 }
 
+export interface RecordTreasuryTransactionInput {
+  type: TreasuryTransactionType;
+  fund: TreasuryFund;
+  amount: number;
+  category: string;
+  description: string;
+  member?: MemberRecord | undefined;
+  actor: Actor;
+}
+
+export interface RecordDuesPaymentInput {
+  period: string;
+  amount: number;
+  fund: TreasuryFund;
+  notes: string;
+  member: MemberRecord;
+  actor: Actor;
+}
+
 export function createSheetsClient(): sheets_v4.Sheets {
   if (!env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !env.GOOGLE_PRIVATE_KEY) {
     throw new DatabaseConfigurationError();
@@ -85,6 +113,11 @@ function asString(value: unknown): string {
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   return '';
+}
+
+function asNumber(value: unknown): number {
+  const number = typeof value === 'number' ? value : Number(asString(value));
+  return Number.isFinite(number) ? number : 0;
 }
 
 function createId(prefix: string): string {
@@ -131,6 +164,75 @@ function rowToMember(row: unknown[], index: number): MemberRecord | null {
     updatedAt: asString(row[11]),
     updatedByDiscordId: asString(row[12]),
     updatedByUsername: asString(row[13]),
+  };
+}
+
+function rowToTreasuryTransaction(row: unknown[]): TreasuryTransaction | null {
+  const transactionId = asString(row[0]);
+  const type = asString(row[2]);
+  const fund = asString(row[3]);
+  if (
+    !transactionId ||
+    !['Income', 'Expense'].includes(type) ||
+    !TREASURY_FUNDS.includes(fund as TreasuryFund)
+  ) {
+    return null;
+  }
+
+  return {
+    transactionId,
+    timestamp: asString(row[1]),
+    type: type as TreasuryTransactionType,
+    fund: fund as TreasuryFund,
+    amount: asNumber(row[4]),
+    category: asString(row[5]),
+    description: asString(row[6]),
+    relatedMemberId: asString(row[7]),
+    relatedDiscordUserId: asString(row[8]),
+    relatedInGameName: asString(row[9]),
+    recordedByDiscordId: asString(row[10]),
+    recordedByUsername: asString(row[11]),
+  };
+}
+
+function treasuryTransactionToRow(
+  transaction: TreasuryTransaction,
+): Array<string | number | boolean> {
+  return [
+    transaction.transactionId,
+    transaction.timestamp,
+    transaction.type,
+    transaction.fund,
+    transaction.amount,
+    transaction.category,
+    transaction.description,
+    transaction.relatedMemberId,
+    transaction.relatedDiscordUserId,
+    transaction.relatedInGameName,
+    transaction.recordedByDiscordId,
+    transaction.recordedByUsername,
+  ];
+}
+
+function rowToDuesPayment(row: unknown[]): DuesPayment | null {
+  const paymentId = asString(row[0]);
+  const fund = asString(row[8]);
+  if (!paymentId || !TREASURY_FUNDS.includes(fund as TreasuryFund)) return null;
+
+  return {
+    paymentId,
+    period: asString(row[1]),
+    paidAt: asString(row[2]),
+    memberId: asString(row[3]),
+    discordUserId: asString(row[4]),
+    discordUsername: asString(row[5]),
+    inGameName: asString(row[6]),
+    amount: asNumber(row[7]),
+    fund: fund as TreasuryFund,
+    notes: asString(row[9]),
+    transactionId: asString(row[10]),
+    recordedByDiscordId: asString(row[11]),
+    recordedByUsername: asString(row[12]),
   };
 }
 
@@ -493,6 +595,226 @@ export class GoogleSheetsDatabase {
     return meeting;
   }
 
+  async listTreasuryTransactions(): Promise<TreasuryTransaction[]> {
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: `'${SHEETS.treasuryTransactions}'!A2:L10000`,
+    });
+
+    return (response.data.values ?? [])
+      .map((row) => rowToTreasuryTransaction(row))
+      .filter((transaction): transaction is TreasuryTransaction => transaction !== null)
+      .reverse();
+  }
+
+  async recordTreasuryTransaction(
+    input: RecordTreasuryTransactionInput,
+  ): Promise<TreasuryTransaction> {
+    if (!Number.isFinite(input.amount) || input.amount <= 0) {
+      throw new DatabaseSchemaError('Treasury amounts must be greater than zero.');
+    }
+
+    const transaction: TreasuryTransaction = {
+      transactionId: createId('TXN'),
+      timestamp: new Date().toISOString(),
+      type: input.type,
+      fund: input.fund,
+      amount: input.amount,
+      category: input.category,
+      description: input.description,
+      relatedMemberId: input.member?.memberId ?? '',
+      relatedDiscordUserId: input.member?.discordUserId ?? '',
+      relatedInGameName: input.member?.inGameName ?? '',
+      recordedByDiscordId: input.actor.discordId,
+      recordedByUsername: input.actor.username,
+    };
+
+    await this.appendRow(
+      SHEETS.treasuryTransactions,
+      TREASURY_TRANSACTION_HEADERS.length,
+      treasuryTransactionToRow(transaction),
+    );
+    await this.appendAudit(
+      'TREASURY_TRANSACTION',
+      input.member?.memberId ?? '',
+      input.actor,
+      `${transaction.fund} ${transaction.type}`,
+      '',
+      `${transaction.amount}: ${transaction.category}`,
+    );
+    return transaction;
+  }
+
+  async getTreasurySummary(): Promise<TreasurySummary> {
+    const transactions = await this.listTreasuryTransactions();
+    const funds: TreasurySummary['funds'] = {
+      Money: { balance: 0, income: 0, expenses: 0 },
+      'Dirty Money': { balance: 0, income: 0, expenses: 0 },
+    };
+
+    for (const transaction of transactions) {
+      const summary = funds[transaction.fund];
+      if (transaction.type === 'Income') {
+        summary.income += transaction.amount;
+        summary.balance += transaction.amount;
+      } else {
+        summary.expenses += transaction.amount;
+        summary.balance -= transaction.amount;
+      }
+    }
+
+    return {
+      funds,
+      recent: transactions.slice(0, 5),
+      transactionCount: transactions.length,
+    };
+  }
+
+  async listDuesPayments(period?: string): Promise<DuesPayment[]> {
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: `'${SHEETS.duesPayments}'!A2:M10000`,
+    });
+    return (response.data.values ?? [])
+      .map((row) => rowToDuesPayment(row))
+      .filter(
+        (payment): payment is DuesPayment =>
+          payment !== null && (!period || payment.period === period),
+      )
+      .reverse();
+  }
+
+  async recordDuesPayment(input: RecordDuesPaymentInput): Promise<DuesPayment> {
+    if (!Number.isFinite(input.amount) || input.amount <= 0) {
+      throw new DatabaseSchemaError('Dues payments must be greater than zero.');
+    }
+
+    const paidAt = new Date().toISOString();
+    const transaction: TreasuryTransaction = {
+      transactionId: createId('TXN'),
+      timestamp: paidAt,
+      type: 'Income',
+      fund: input.fund,
+      amount: input.amount,
+      category: 'Club Dues',
+      description: `${input.period} dues — ${input.member.inGameName}`,
+      relatedMemberId: input.member.memberId,
+      relatedDiscordUserId: input.member.discordUserId,
+      relatedInGameName: input.member.inGameName,
+      recordedByDiscordId: input.actor.discordId,
+      recordedByUsername: input.actor.username,
+    };
+    const payment: DuesPayment = {
+      paymentId: createId('DUES'),
+      period: input.period,
+      paidAt,
+      memberId: input.member.memberId,
+      discordUserId: input.member.discordUserId,
+      discordUsername: input.member.discordUsername,
+      inGameName: input.member.inGameName,
+      amount: input.amount,
+      fund: input.fund,
+      notes: input.notes,
+      transactionId: transaction.transactionId,
+      recordedByDiscordId: input.actor.discordId,
+      recordedByUsername: input.actor.username,
+    };
+
+    const [transactionIds, paymentIds] = await Promise.all([
+      this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `'${SHEETS.treasuryTransactions}'!A2:A10000`,
+      }),
+      this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `'${SHEETS.duesPayments}'!A2:A10000`,
+      }),
+    ]);
+    const transactionRow = (transactionIds.data.values?.length ?? 0) + 2;
+    const paymentRow = (paymentIds.data.values?.length ?? 0) + 2;
+
+    await this.sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId: this.spreadsheetId,
+      requestBody: {
+        valueInputOption: 'RAW',
+        data: [
+          {
+            range: `'${SHEETS.treasuryTransactions}'!A${transactionRow}:L${transactionRow}`,
+            values: [treasuryTransactionToRow(transaction)],
+          },
+          {
+            range: `'${SHEETS.duesPayments}'!A${paymentRow}:M${paymentRow}`,
+            values: [
+              [
+                payment.paymentId,
+                payment.period,
+                payment.paidAt,
+                payment.memberId,
+                payment.discordUserId,
+                payment.discordUsername,
+                payment.inGameName,
+                payment.amount,
+                payment.fund,
+                payment.notes,
+                payment.transactionId,
+                payment.recordedByDiscordId,
+                payment.recordedByUsername,
+              ],
+            ],
+          },
+        ],
+      },
+    });
+    await this.appendAudit(
+      'RECORD_DUES',
+      input.member.memberId,
+      input.actor,
+      input.period,
+      '',
+      `${input.amount} ${input.fund}`,
+    );
+    return payment;
+  }
+
+  async getDuesReport(period: string): Promise<DuesReport> {
+    const [members, payments] = await Promise.all([
+      this.listMembers(),
+      this.listDuesPayments(period),
+    ]);
+    const trackedMembers = members.filter(
+      (member) => !['removed', 'retired'].includes(member.status.toLowerCase()),
+    );
+    const paymentsByDiscordId = new Map<string, DuesPayment[]>();
+    for (const payment of payments) {
+      const memberPayments = paymentsByDiscordId.get(payment.discordUserId) ?? [];
+      memberPayments.push(payment);
+      paymentsByDiscordId.set(payment.discordUserId, memberPayments);
+    }
+
+    const paid = trackedMembers
+      .filter((member) => paymentsByDiscordId.has(member.discordUserId))
+      .map((member) => {
+        const memberPayments = paymentsByDiscordId.get(member.discordUserId) ?? [];
+        return {
+          member,
+          amountPaid: memberPayments.reduce((total, payment) => total + payment.amount, 0),
+          paymentCount: memberPayments.length,
+        };
+      })
+      .sort((left, right) => left.member.inGameName.localeCompare(right.member.inGameName));
+    const unpaid = trackedMembers
+      .filter((member) => !paymentsByDiscordId.has(member.discordUserId))
+      .sort((left, right) => left.inGameName.localeCompare(right.inGameName));
+
+    return {
+      period,
+      paid,
+      unpaid,
+      totalCollected: payments.reduce((total, payment) => total + payment.amount, 0),
+      paymentCount: payments.length,
+    };
+  }
+
   private async appendRow(
     sheetName: string,
     width: number,
@@ -553,4 +875,6 @@ export const DATABASE_HEADERS = {
   [SHEETS.audit]: AUDIT_HEADERS,
   [SHEETS.churchMeetings]: CHURCH_MEETING_HEADERS,
   [SHEETS.churchAttendance]: CHURCH_ATTENDANCE_HEADERS,
+  [SHEETS.treasuryTransactions]: TREASURY_TRANSACTION_HEADERS,
+  [SHEETS.duesPayments]: DUES_PAYMENT_HEADERS,
 } as const;

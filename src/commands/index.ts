@@ -5,6 +5,7 @@ import { churchCommand } from './church.js';
 import { memberCommand } from './member.js';
 import { pingCommand } from './ping.js';
 import { rosterCommand } from './roster.js';
+import { treasurerCommand } from './treasurer.js';
 import { voteCommand } from './vote.js';
 import type { BotCommand } from './types.js';
 
@@ -16,6 +17,7 @@ for (const command of [
   memberCommand,
   pingCommand,
   rosterCommand,
+  treasurerCommand,
   voteCommand,
 ]) {
   commands.set(command.data.name, command);

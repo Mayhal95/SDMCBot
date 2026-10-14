@@ -46,13 +46,15 @@ client.once(Events.ClientReady, (readyClient) => {
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
     const isPublicVote = interaction.isButton() && isVoteButton(interaction.customId);
+    const isTreasurerCommand =
+      interaction.isChatInputCommand() && interaction.commandName === 'treasurer';
     const requiresFounder =
       interaction.isChatInputCommand() ||
       interaction.isModalSubmit() ||
       interaction.isButton() ||
       interaction.isStringSelectMenu() ||
       interaction.isUserSelectMenu();
-    if (requiresFounder && !isPublicVote && !hasFounderRole(interaction)) {
+    if (requiresFounder && !isPublicVote && !isTreasurerCommand && !hasFounderRole(interaction)) {
       if (interaction.isRepliable()) {
         await interaction.reply(
           createPanelReply({

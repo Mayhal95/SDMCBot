@@ -48,8 +48,12 @@ This safely creates and formats these tabs without overwriting a conflicting hea
 - `Audit Log` — registration, edits, removals, notes, and roster-sync history
 - `Church Meetings` — one archive row for every published church meeting and its Discord links
 - `Church Attendance` — one present/absent row per tracked roster member for every meeting
+- `Treasury Transactions` — an immutable income and expense ledger for Money and Dirty Money
+- `Dues Payments` — member dues history linked to automatically created treasury transactions
 
 The `Church Attendance` status column accepts `Present`, `Absent`, `Excused`, or `Late`. Publishing final minutes from `/church` automatically snapshots the current active roster, marks the selected attendees present, and marks the remaining tracked members absent. Selected Discord users who are not yet registered are still saved as present with an `Unregistered` roster status.
+
+Use `/treasurer transaction` for money gained or spent. Use `/treasurer dues` for dues so the bot writes both the dues payment and its linked income transaction together. `/treasurer dues-report` compares payments for a `YYYY-MM` period against the active roster.
 
 ## 5. Configure rank synchronization
 

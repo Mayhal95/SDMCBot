@@ -8,6 +8,8 @@ import {
   MEMBER_STATUSES,
   NOTE_CATEGORIES,
   SHEETS,
+  TREASURY_FUNDS,
+  TREASURY_TRANSACTION_TYPES,
 } from './database/schema.js';
 import { logger } from './logger.js';
 
@@ -23,6 +25,8 @@ const columnWidths: Record<string, readonly number[]> = {
     140, 120, 220, 110, 100, 320, 420, 320, 180, 320, 180, 320, 190, 190, 170,
   ],
   [SHEETS.churchAttendance]: [140, 140, 120, 180, 170, 140, 180, 120, 120, 140, 190, 190, 170],
+  [SHEETS.treasuryTransactions]: [140, 190, 100, 130, 120, 150, 360, 140, 190, 180, 190, 170],
+  [SHEETS.duesPayments]: [140, 100, 190, 140, 190, 170, 180, 120, 130, 300, 140, 190, 170],
 };
 
 function columnLetter(width: number): string {
@@ -73,6 +77,8 @@ async function ensureSheetsExist(): Promise<void> {
     SHEETS.audit,
     SHEETS.churchMeetings,
     SHEETS.churchAttendance,
+    SHEETS.treasuryTransactions,
+    SHEETS.duesPayments,
   ]) {
     if (!properties.has(sheetName)) {
       requests.push({ addSheet: { properties: { title: sheetName } } });
@@ -297,6 +303,101 @@ async function formatSchema(
     });
   }
 
+  const treasuryTransactionsSheetId = properties.get(SHEETS.treasuryTransactions)?.sheetId;
+  if (treasuryTransactionsSheetId !== undefined && treasuryTransactionsSheetId !== null) {
+    requests.push(
+      {
+        setDataValidation: {
+          range: {
+            sheetId: treasuryTransactionsSheetId,
+            startRowIndex: 1,
+            endRowIndex: 10000,
+            startColumnIndex: 2,
+            endColumnIndex: 3,
+          },
+          rule: {
+            condition: {
+              type: 'ONE_OF_LIST',
+              values: TREASURY_TRANSACTION_TYPES.map((type) => ({ userEnteredValue: type })),
+            },
+            strict: true,
+            showCustomUi: true,
+          },
+        },
+      },
+      {
+        setDataValidation: {
+          range: {
+            sheetId: treasuryTransactionsSheetId,
+            startRowIndex: 1,
+            endRowIndex: 10000,
+            startColumnIndex: 3,
+            endColumnIndex: 4,
+          },
+          rule: {
+            condition: {
+              type: 'ONE_OF_LIST',
+              values: TREASURY_FUNDS.map((fund) => ({ userEnteredValue: fund })),
+            },
+            strict: true,
+            showCustomUi: true,
+          },
+        },
+      },
+      {
+        repeatCell: {
+          range: {
+            sheetId: treasuryTransactionsSheetId,
+            startRowIndex: 1,
+            endRowIndex: 10000,
+            startColumnIndex: 4,
+            endColumnIndex: 5,
+          },
+          cell: { userEnteredFormat: { numberFormat: { type: 'NUMBER', pattern: '$#,##0' } } },
+          fields: 'userEnteredFormat.numberFormat',
+        },
+      },
+    );
+  }
+
+  const duesPaymentsSheetId = properties.get(SHEETS.duesPayments)?.sheetId;
+  if (duesPaymentsSheetId !== undefined && duesPaymentsSheetId !== null) {
+    requests.push(
+      {
+        setDataValidation: {
+          range: {
+            sheetId: duesPaymentsSheetId,
+            startRowIndex: 1,
+            endRowIndex: 10000,
+            startColumnIndex: 8,
+            endColumnIndex: 9,
+          },
+          rule: {
+            condition: {
+              type: 'ONE_OF_LIST',
+              values: TREASURY_FUNDS.map((fund) => ({ userEnteredValue: fund })),
+            },
+            strict: true,
+            showCustomUi: true,
+          },
+        },
+      },
+      {
+        repeatCell: {
+          range: {
+            sheetId: duesPaymentsSheetId,
+            startRowIndex: 1,
+            endRowIndex: 10000,
+            startColumnIndex: 7,
+            endColumnIndex: 8,
+          },
+          cell: { userEnteredFormat: { numberFormat: { type: 'NUMBER', pattern: '$#,##0' } } },
+          fields: 'userEnteredFormat.numberFormat',
+        },
+      },
+    );
+  }
+
   await sheets.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests } });
 }
 
@@ -343,11 +444,32 @@ async function verifyChurchSchema(): Promise<void> {
   }
 }
 
+async function verifyTreasurySchema(): Promise<void> {
+  const response = await sheets.spreadsheets.values.batchGet({
+    spreadsheetId,
+    ranges: [`'${SHEETS.treasuryTransactions}'!A1:L1`, `'${SHEETS.duesPayments}'!A1:M1`],
+  });
+  const expectedHeaders = [
+    DATABASE_HEADERS[SHEETS.treasuryTransactions],
+    DATABASE_HEADERS[SHEETS.duesPayments],
+  ];
+
+  for (const [index, expected] of expectedHeaders.entries()) {
+    const actual = (response.data.valueRanges?.[index]?.values?.[0] ?? []).map(String);
+    if (actual.join('|') !== expected.join('|')) {
+      throw new Error(
+        `Verification failed for ${index === 0 ? SHEETS.treasuryTransactions : SHEETS.duesPayments} headers.`,
+      );
+    }
+  }
+}
+
 try {
   await ensureSheetsExist();
   const properties = await ensureHeaders();
   await formatSchema(properties);
   await verifyChurchSchema();
+  await verifyTreasurySchema();
   logger.info({ spreadsheetId }, 'SDMC Google Sheets database schema is ready');
 } catch (error) {
   logger.fatal(

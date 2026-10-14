@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { churchCommand } from '../../src/commands/church.js';
 import { memberCommand } from '../../src/commands/member.js';
 import { rosterCommand } from '../../src/commands/roster.js';
+import { treasurerCommand } from '../../src/commands/treasurer.js';
 import type { BotCommand } from '../../src/commands/types.js';
 import { voteCommand, voteOutcome } from '../../src/commands/vote.js';
 
@@ -50,6 +51,32 @@ describe('management command definitions', () => {
 
   it('registers the church console command', () => {
     expect(churchCommand.data.toJSON()).toMatchObject({ name: 'church', options: [] });
+  });
+
+  it('registers the complete treasurer workflow', () => {
+    expect(subcommandNames(treasurerCommand)).toEqual([
+      'overview',
+      'transaction',
+      'ledger',
+      'dues',
+      'dues-report',
+    ]);
+  });
+
+  it('requires the essential transaction fields', () => {
+    const transaction = treasurerCommand.data
+      .toJSON()
+      .options?.find((option) => option.name === 'transaction');
+    expect(transaction).toMatchObject({
+      options: [
+        { name: 'action', required: true },
+        { name: 'fund', required: true },
+        { name: 'amount', required: true },
+        { name: 'category', required: true },
+        { name: 'description', required: true },
+        { name: 'member' },
+      ],
+    });
   });
 
   it('limits votes to the supported 15 and 30 second durations', () => {
